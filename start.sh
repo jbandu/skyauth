@@ -88,7 +88,8 @@ npm run build || {
 }
 
 HOST="${HOST:-0.0.0.0}"
-PORT="${PORT:-3000}"
+# Railway uses PORT 8080 by default, but respect PORT env var if set
+PORT="${PORT:-8080}"
 
 echo "Starting application on ${HOST}:${PORT}..."
 npm run start -- --hostname "${HOST}" --port "${PORT}" || {
