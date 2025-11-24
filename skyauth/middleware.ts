@@ -6,7 +6,14 @@ import { auth } from "@/auth";
 const protectedRoutes = ["/dashboard", "/employees", "/org-chart", "/departments", "/hr", "/admin"];
 
 export async function middleware(request: NextRequest) {
-  const session = await auth();
+  let session = null;
+  try {
+    session = await auth();
+  } catch (error) {
+    // If auth fails (e.g., DATABASE_URL not set), allow request to continue
+    // Protected routes will handle authentication at the page level
+    console.error("Middleware auth error:", error);
+  }
   const response = NextResponse.next();
 
   if (session?.user?.airlineId) {

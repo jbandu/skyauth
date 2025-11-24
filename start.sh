@@ -65,14 +65,33 @@ if ! command -v npm >/dev/null 2>&1; then
 fi
 
 if [[ -f package-lock.json ]]; then
-  npm ci --include=dev
+  echo "Installing dependencies with npm ci..."
+  npm ci --include=dev || {
+    echo "npm ci failed, trying npm install..." >&2
+    npm install || {
+      echo "Failed to install dependencies" >&2
+      exit 1
+    }
+  }
 else
-  npm install
+  echo "Installing dependencies with npm install..."
+  npm install || {
+    echo "Failed to install dependencies" >&2
+    exit 1
+  }
 fi
 
-npm run build
+echo "Building application..."
+npm run build || {
+  echo "Build failed" >&2
+  exit 1
+}
 
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-3000}"
 
-npm run start -- --hostname "${HOST}" --port "${PORT}"
+echo "Starting application on ${HOST}:${PORT}..."
+npm run start -- --hostname "${HOST}" --port "${PORT}" || {
+  echo "Application failed to start" >&2
+  exit 1
+}
