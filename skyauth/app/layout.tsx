@@ -27,7 +27,21 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
+  // Safely get session - don't fail build if DATABASE_URL is not available
+  // During build phase, Next.js might try to analyze this code even with force-dynamic
+  let session = null;
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  
+  if (!isBuildPhase) {
+    try {
+      session = await auth();
+    } catch (error) {
+      // Log errors at runtime, but don't fail the request
+      console.error("Failed to get session in layout:", error);
+    }
+  }
+  // During build, session will be null, which is fine - it will be fetched at runtime
+  
   const brand = getBrandByCode("CM");
 
   return (
