@@ -23,6 +23,9 @@ export const metadata: Metadata = {
     "SkyAuth delivers secure identity, multi-tenant HR tools, and real-time org insights for airline operators.",
 };
 
+// Force dynamic rendering to ensure DATABASE_URL is available at runtime
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const brand = getBrandByCode("CM");
