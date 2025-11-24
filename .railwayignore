@@ -1,0 +1,23 @@
+# Include everything by default
+# Only ignore build artifacts and dependencies that will be recreated
+
+# Ignore node_modules (will be installed by npm ci)
+node_modules/
+skyauth/node_modules/
+
+# Ignore build outputs
+.next/
+skyauth/.next/
+out/
+skyauth/out/
+
+# Ignore logs
+*.log
+
+# IMPORTANT: Do NOT ignore these files
+!package.json
+!package-lock.json
+!skyauth/package.json
+!skyauth/package-lock.json
+!start.sh
+!railway.json
