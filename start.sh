@@ -12,83 +12,11 @@ fi
 
 cd "${APP_DIR}"
 
-# Initialize NVM if available (for non-interactive shells)
-# Try multiple common NVM locations
-NVM_PATHS=(
-  "${HOME}/.nvm"
-  "/home/ubuntu/.nvm"
-  "/root/.nvm"
-  "${NVM_DIR:-}"
-)
-
-NVM_FOUND=false
-for NVM_PATH in "${NVM_PATHS[@]}"; do
-  if [[ -n "${NVM_PATH}" && -s "${NVM_PATH}/nvm.sh" ]]; then
-    export NVM_DIR="${NVM_PATH}"
-    # shellcheck source=/dev/null
-    source "${NVM_DIR}/nvm.sh"
-    NVM_FOUND=true
-    break
-  fi
-done
-
-# If NVM was found, ensure a Node version is loaded
-if [[ "${NVM_FOUND}" == "true" ]]; then
-  # Use default Node version if available, or try to use the latest installed version
-  if command -v nvm >/dev/null 2>&1; then
-    # Try to use default version, or fall back to any installed version
-    nvm use default 2>/dev/null || {
-      # If no default, try to use the latest installed version
-      INSTALLED_VERSION=$(nvm list --no-colors 2>/dev/null | grep -E '^[[:space:]]*\*?[[:space:]]*v[0-9]' | head -1 | sed 's/^[[:space:]]*\*?[[:space:]]*//' | awk '{print $1}')
-      if [[ -n "${INSTALLED_VERSION}" ]]; then
-        nvm use "${INSTALLED_VERSION}" 2>/dev/null || true
-      fi
-    }
-    # Ensure PATH includes Node binaries even if nvm use didn't work
-    if [[ -d "${NVM_DIR}/versions/node" ]]; then
-      # Find the latest installed Node version and add it to PATH
-      LATEST_NODE=$(find "${NVM_DIR}/versions/node" -maxdepth 1 -type d -name "v*" 2>/dev/null | sort -V | tail -1)
-      if [[ -n "${LATEST_NODE}" && -d "${LATEST_NODE}/bin" ]]; then
-        export PATH="${LATEST_NODE}/bin:${PATH}"
-      fi
-    fi
-  fi
-fi
-
-# Check if npm is available
-if ! command -v npm >/dev/null 2>&1; then
-  echo "start.sh: npm is required but was not found in PATH." >&2
-  echo "start.sh: PATH=${PATH}" >&2
-  echo "start.sh: NVM_DIR=${NVM_DIR:-not set}" >&2
-  echo "start.sh: HOME=${HOME:-not set}" >&2
-  exit 1
-fi
-
-if [[ -f package-lock.json ]]; then
-  echo "Installing dependencies with npm ci..."
-  npm ci --include=dev || {
-    echo "npm ci failed, trying npm install..." >&2
-    npm install || {
-      echo "Failed to install dependencies" >&2
-      exit 1
-    }
-  }
-else
-  echo "Installing dependencies with npm install..."
-  npm install || {
-    echo "Failed to install dependencies" >&2
-    exit 1
-  }
-fi
-
-echo "Building application..."
-npm run build || {
-  echo "Build failed" >&2
-  exit 1
-}
+# Nixpacks already handles npm installation and build during the build phase
+# We just need to start the application here
 
 HOST="${HOST:-0.0.0.0}"
-# Railway uses PORT 8080 by default, but respect PORT env var if set
+# Railway uses PORT environment variable, default to 8080 if not set
 PORT="${PORT:-8080}"
 
 echo "Starting application on ${HOST}:${PORT}..."
