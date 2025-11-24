@@ -12,6 +12,13 @@ fi
 
 cd "${APP_DIR}"
 
+# Initialize NVM if available (for non-interactive shells)
+export NVM_DIR="$HOME/.nvm"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$NVM_DIR/nvm.sh"
+fi
+
 if ! command -v npm >/dev/null 2>&1; then
   echo "start.sh: npm is required but was not found in PATH." >&2
   exit 1
